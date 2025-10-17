@@ -77,12 +77,12 @@ When submitting your bot to Discord, use these URLs:
 
 **Terms of Service URL**:
 ```
-https://github.com/4RSO-N/aurasync-nextjs/blob/main/TERMS_OF_SERVICE.md
+https://github.com/4RSO-N/TBTB/blob/main/TERMS_OF_SERVICE.md
 ```
 
 **Privacy Policy URL**:
 ```
-https://github.com/4RSO-N/aurasync-nextjs/blob/main/PRIVACY_POLICY.md
+https://github.com/4RSO-N/TBTB/blob/main/PRIVACY_POLICY.md
 ```
 
-> **Note**: Make sure these files are pushed to your GitHub repository before submitting your bot for verification!
+> **Note**: These files are now live on GitHub and ready to use!
