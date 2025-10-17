@@ -1,0 +1,44 @@
+# Docker ignore file for TBTB
+# Similar to .gitignore but for Docker builds
+
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Environment variables (set via Docker/Railway)
+.env
+.env.*
+
+# Configuration (managed separately)
+config.json
+
+# Logs (will be created in container)
+logs/
+*.log
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+test/
+*.test.js
+
+# Temporary files
+*.tmp
+*.temp

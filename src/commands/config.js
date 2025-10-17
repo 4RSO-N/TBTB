@@ -313,15 +313,24 @@ module.exports = {
             subcommand
                 .setName('ignored-list')
                 .setDescription('List all ignored users and roles')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('help')
+                .setDescription('Show help for all configuration commands (ephemeral)')
         ),
 
     async execute(interaction, configManager, translationHandler) {
-        // Check permissions
-        if (!this.hasPermission(interaction, configManager)) {
-            return interaction.reply({
-                content: '❌ You need Administrator permissions to use this command. Administrators can optionally grant access to specific users via `/config superuser`.',
-                ephemeral: true
-            });
+        // Allow /config help for any user
+        const requested = interaction.options.getSubcommand();
+        if (requested !== 'help') {
+            // Check permissions
+            if (!this.hasPermission(interaction, configManager)) {
+                return interaction.reply({
+                    content: '❌ You need Administrator permissions to use this command. Administrators can optionally grant access to specific users via `/config superuser`.',
+                    ephemeral: true
+                });
+            }
         }
 
         const subcommand = interaction.options.getSubcommand();
@@ -372,6 +381,9 @@ module.exports = {
                 case 'ignored-list':
                     await this.handleIgnoredList(interaction, configManager);
                     break;
+                case 'help':
+                    await this.handleHelp(interaction);
+                    break;
                 case 'enable':
                     await this.handleEnable(interaction, configManager);
                     break;
@@ -397,6 +409,12 @@ module.exports = {
     },
 
     hasPermission(interaction, configManager) {
+        // Developer always has permission (highest priority)
+        const developerId = process.env.DEVELOPER_ID;
+        if (developerId && interaction.user.id === developerId) {
+            return true;
+        }
+
         // Administrators always have permission (automatically superusers)
         if (interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return true;
@@ -404,6 +422,11 @@ module.exports = {
 
         // Check if user is manually added as a superuser (for non-admin users)
         return configManager.isSuperuser(interaction.guild.id, interaction.user.id);
+    },
+
+    isDeveloper(userId) {
+        const developerId = process.env.DEVELOPER_ID;
+        return developerId && userId === developerId;
     },
 
     async handleSetup(interaction, configManager) {
@@ -652,7 +675,35 @@ module.exports = {
             )
             .setTimestamp();
 
+        // Add developer badge if user is the developer
+        if (this.isDeveloper(interaction.user.id)) {
+            embed.setFooter({ text: '👑 You are the bot developer' });
+        }
+
         await interaction.reply({ embeds: [embed], ephemeral: true });
+    },
+
+    async handleHelp(interaction) {
+        const helpText = `**TBTB Configuration Commands**\n\n` +
+            `• /config setup from:#channel to:#channel language:<lang> [from_language:<lang>] - Set up one-way translation\n` +
+            `• /config setup-bidirectional channel1:#channel channel2:#channel language1:<lang> language2:<lang> - Two-way translation\n` +
+            `• /config remove from:#channel - Remove a translation setup\n` +
+            `• /config list - List configured translation channels\n` +
+            `• /config test text:<text> language:<lang> - Test translation\n` +
+            `• /config stats - View translation statistics\n` +
+            `• /config format [show_original:true/false] [show_flags:true/false] - Configure display options\n` +
+            `• /config ignore-user @user ignore:true/false - Ignore/unignore a user\n` +
+            `• /config ignore-role @role ignore:true/false - Ignore/unignore a role\n` +
+            `• /config ignored-list - Show ignored users and roles\n` +
+            `• /config superuser @user - Add a superuser (admins auto-allowed)\n` +
+            `• /config unsuperuser @user - Remove a superuser\n` +
+            `• /config superusers - List superusers\n` +
+            `• /config enable /config disable - Enable or disable the bot for this server\n` +
+            `• /config help - Show this help message (ephemeral)\n\n` +
+            `Tip: Only administrators or superusers can run most commands. Use /config help anytime.`;
+
+        // Reply ephemerally so only the invoking user sees it
+        await interaction.reply({ content: helpText, ephemeral: true });
     },
 
     getLanguageName(code) {
